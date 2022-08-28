@@ -51,42 +51,42 @@ function printSegment(seg, dir, minI, maxI, minJ, maxJ) {
     }
 }
 
-function nextSegment(mat, ar, dir, arI, ci, cj, minI, maxI, minJ, maxJ) {
+function nextSegment(dir, ci, cj, minI, maxI, minJ, maxJ) {
     if (dir === RIGHT) {
-        for (let x = cj; x <= maxJ; x++) {
+        /*for (let x = cj; x <= maxJ; x++) {
             ar[arI] = mat[ci][x];
             arI++;
-        }
+        }*/
         cj = maxJ;
         minI++;
         ci++;
     } else if (dir === DOWN) {
-        for (let x = ci; x <= maxI; x++) {
-            ar[arI] = mat[x][cj];
-            arI++;
-        }
         ci = maxI;
         maxJ--;
         cj--;
     } else if (dir === LEFT) {
-        for (let x = cj; x >= minJ; x--) {
-            ar[arI] = mat[ci][x];
-            arI++;
-        }
         cj = minJ;
         maxI--;
         ci--;
     } else if (dir === UP) {
-        for (let x = ci; x >= minI; x--) {
-            ar[arI] = mat[x][cj];
-            arI++;
-        }
         ci = minI;
         minJ++;
         cj++;
     }
 
-    return [arI, ci, cj, minI, maxI, minJ, maxJ];
+    return [ci, cj, minI, maxI, minJ, maxJ];
+}
+
+function copySegment(mat, ar, dir, arI, ci, cj, minI, maxI, minJ, maxJ) {
+    const [di, dj] = dir;
+    do {
+        ar[arI] = mat[ci][cj];
+        ci += di;
+        cj += dj;
+        arI++;
+    } while(ci >= minI && ci <= maxI && cj >= minJ && cj <= maxJ);
+
+    return arI;
 }
 // Function to modify
 /**
@@ -178,10 +178,11 @@ function snail2(m) {
     let seg = 0;
     let arI = 0;
     do {
-        [arI, i, j, minI, maxI, minJ, maxJ] = nextSegment(m, res, curDir, arI, i, j, minI, maxI, minJ, maxJ);
+        arI = copySegment(m, res, curDir, arI, i, j, minI, maxI, minJ, maxJ);
+        [i, j, minI, maxI, minJ, maxJ] = nextSegment(curDir, i, j, minI, maxI, minJ, maxJ);
         curDir = nextDirection(curDir);
         seg++;
-    } while(arI < res.length); //< 28);
+    } while(arI < res.length); // < 28);
 
     return res;
 }
@@ -214,7 +215,7 @@ function main() {
     console.log("Smoke test", JSON.stringify(res));
 }
 
-// main();
+main();
 
 module.exports = snail2;
 

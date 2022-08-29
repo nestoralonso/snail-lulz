@@ -1,32 +1,56 @@
-function snail(array) {
+
+/**
+ * Snail Sort
+ *
+ * This function will sort a NxN matrix using the following pattern:
+ *  - Number of elements to read on each iteration: N M-1 N-1 M-2 N-2 ... M-(M-1) N-(N-1)
+ *  - Given a [i,j] pair, the snail will travel clockwise by doing this:
+ *    -- Iteration N:   j++
+ *    -- Iteration M-1: i++
+ *    -- Iteration N-1: j--
+ *    -- Iteration M-2: i--
+ *    -- Iteration N-2: (start over with j++)
+ *    -- (continue)
+ *
+ * @param {array} a NxM matrix.
+ * @return {array} the array of elements arranged from outermost elements to the middle element, traveling clockwise.
+ */
+ function snail(array) {
     //*************** VARIABLES ***************
+    yDimLenght = array.length;
+    xDimLenght = array[0].length;
+
     const result = [];
-    let i = 0, j = 0;
-    let iterationItemQuantity = array.length
+    let x = 0, y = 0;
+    let horizontalIterations = xDimLenght
+    let verticalIterations = yDimLenght - 1
+
     let turnControl = 1;
-    let isIteratingOverJ = true;
+    let isIteratingOverX = true;
     let hasToIncrease = true;
 
     //****** LOOP having O(n) complexity ********
-    for (let resultIndex = 0; resultIndex < array.length ** 2; resultIndex++){
-        result[resultIndex] = array[i][j];
+    for (resultIndex = 0; resultIndex < xDimLenght * yDimLenght; resultIndex++){
+        result[resultIndex] = array[x][y];
 
         //Turn the snail to the right if it's at the edge
-        if (turnControl == iterationItemQuantity){
-            if (isIteratingOverJ){
-              iterationItemQuantity--;
+        if ((turnControl == horizontalIterations && isIteratingOverX) || (turnControl == verticalIterations && !isIteratingOverX)){
+
+            if (isIteratingOverX){
+                horizontalIterations--;
             } else {
-              hasToIncrease = !hasToIncrease;
+                verticalIterations--;
+                hasToIncrease = !hasToIncrease;
             }
             turnControl = 0;
-            isIteratingOverJ = !isIteratingOverJ;
+            isIteratingOverX = !isIteratingOverX;
         }
 
         //Increase or decrease the dimension before reading the next value
-        if (isIteratingOverJ){
-            j = (hasToIncrease ? j+1 : j-1);
+        if (isIteratingOverX){
+            y = (hasToIncrease ? y+1 : y-1);
         } else {
-            i = (hasToIncrease ? i+1 : i-1);
+            x = (hasToIncrease ? x+1 : x-1);
         }
 
         turnControl++;

@@ -228,7 +228,7 @@ async function asyncSnail(matt) {
 async function main() {
     // const m = mat20x5();
     // const mab = createMatrix(m);
-    const rows = 100_000;
+    const rows = 10_000;
     const cols = 10_000;
     const mab = createRandMatrix(rows, cols);
     console.log("🐮", { rows, cols })
@@ -236,7 +236,6 @@ async function main() {
     console.log("result", res);
 }
 // main();
-
 
 module.exports.copyMatrix = copyMatrix;
 module.exports.createRandMatrix = createRandMatrix;

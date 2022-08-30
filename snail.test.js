@@ -1,5 +1,5 @@
 //@ts-check
-const { createMatrix, snail, createArray, equalAB, createRandMatrix } = require("./nestor/snail3.js");
+const { createMatrix, snailAsync, createArray, equalAB, createRandMatrix, asyncSnail } = require("./nestor/snail3.js");
 
 //If you want to try a larger array
 function matrixGenerator(rows, cols) {
@@ -23,7 +23,6 @@ function timedFunc(func) {
   }
 }
 
-const matrixGen = timedFunc(matrixGenerator);
 const cases = [
   {
     name: "3x3 Matrix",
@@ -75,34 +74,34 @@ const cases = [
     noCheck: true,
   },
   {
-    name: "10000x1000",
-    input: () => createRandMatrix(10000, 1000),
-    enabled: true,
-    noCheck: true,
-  },
-  {
     name: "10000x10000",
     input: () => createRandMatrix(10000, 10000),
     enabled: true,
     noCheck: true,
   },
   {
-    name: "100000x10000",
-    input: () => createRandMatrix(100000, 10000),
+    name: "10000x10000",
+    input: () => createRandMatrix(10000, 10000),
+    enabled: false,
+    noCheck: true,
+  },
+  {
+    name: "100000x30000",
+    input: () => createRandMatrix(100000, 30000),
     enabled: false,
     noCheck: true,
   }
 ];
 
 describe("Snail Sort", () => {
+  jest.setTimeout(180000);
   cases
     .filter((c) => c.enabled)
     .forEach((c) =>
-      it(c.name, () => {
+      it(c.name, async () => {
 
         const matrix = c.input();
-        const timedSnail = timedFunc(snail);
-        const curr = timedSnail(matrix);
+        const curr = await asyncSnail(matrix);
 
         if (!c.noCheck) {
           const isEqual = equalAB(curr, c.output);

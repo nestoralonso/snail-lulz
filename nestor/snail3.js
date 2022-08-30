@@ -1,4 +1,7 @@
 //@ts-check
+const { resolve } = require('path');
+const Piscina = require('piscina');
+const { setgid } = require('process');
 
 // Following constants are vectors that indicate the direction of movement
 const RIGHT = [0, 1];
@@ -32,10 +35,7 @@ function snail(m) {
     }
 
     const length = m.rows * m.cols;
-
-    // try to preallocate the resulting array
-    const shab = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * length);
-    const res = new Int32Array(shab);
+    // console.log("🦊>>>> ~ snail ~ length", length)
     let i = 0;
     let j = 0;
     let maxJ = m.cols - 1;
@@ -45,13 +45,25 @@ function snail(m) {
     let curDir = RIGHT;
 
     let arI = 0;
-    do {
-        arI = copySegment(m, res, curDir, arI, i, j, minI, maxI, minJ, maxJ);
-        [i, j, minI, maxI, minJ, maxJ] = nextSegment(curDir, i, j, minI, maxI, minJ, maxJ);
-        curDir = nextDirection(curDir);
-    } while(arI < res.length); // < 28);
+    const resSegments = [];
 
-    return res;
+    // initial segment length
+    let segLength = m.cols;
+
+    let c = 0;
+    do {
+        // console.log(`${directionToString(curDir)}= ${segLength}`);
+
+        resSegments.push([curDir, arI, i, j, minI, maxI, minJ, maxJ, segLength]);
+        arI += segLength;
+        [i, j, minI, maxI, minJ, maxJ, segLength] = nextSegment(curDir, i, j, minI, maxI, minJ, maxJ);
+        curDir = nextDirection(curDir);
+        c++;
+    } while (arI < length); // < 28);
+    //} while (c < 6); // < 28);
+    //console.log("🦊>>>> ~ snail ~ resSegments", resSegments.map(s => s.at(-1)))
+
+    return resSegments;
 }
 
 
@@ -66,44 +78,30 @@ function nextDirection(currDir) {
 }
 
 function nextSegment(dir, ci, cj, minI, maxI, minJ, maxJ) {
+    let length = 0;
     if (dir === RIGHT) {
         cj = maxJ;
         minI++;
         ci++;
+        length = maxI - ci + 1;
     } else if (dir === DOWN) {
         ci = maxI;
         maxJ--;
         cj--;
+        length = cj - minJ + 1;
     } else if (dir === LEFT) {
         cj = minJ;
         maxI--;
         ci--;
+        length = ci - minI + 1;
     } else if (dir === UP) {
         ci = minI;
         minJ++;
         cj++;
+        length = maxJ - cj + 1;
     }
 
-    return [ci, cj, minI, maxI, minJ, maxJ];
-}
-
-function copySegment(mat, ar, dir, arI, ci, cj, minI, maxI, minJ, maxJ) {
-    const [di, dj] = dir;
-    do {
-        ar[arI] = getm(mat, ci, cj);
-        ci += di;
-        cj += dj;
-        arI++;
-    } while(ci >= minI && ci <= maxI && cj >= minJ && cj <= maxJ);
-
-    return arI;
-}
-
-function getm(fm, i, j) {
-    const { data, cols } = fm;
-
-    const ix = i * cols + j;
-    return data[ix];
+    return [ci, cj, minI, maxI, minJ, maxJ, length];
 }
 
 function copyMatrix(mJs, mInt32) {
@@ -111,7 +109,7 @@ function copyMatrix(mJs, mInt32) {
     for (let i = 0; i < mJs.length; i++) {
         const row = mJs[i];
         for (let j = 0; j < row.length; j++) {
-            mInt32.data[ix] =row[j];
+            mInt32.data[ix] = row[j];
             ix++;
         }
     }
@@ -127,7 +125,7 @@ function createMatrix(mJs) {
     for (let i = 0; i < mJs.length; i++) {
         const row = mJs[i];
         for (let j = 0; j < row.length; j++) {
-            mInt32[ix] =row[j];
+            mInt32[ix] = row[j];
             ix++;
         }
     }
@@ -181,7 +179,7 @@ function equalAB(ab1, ab2) {
 function mat20x5() {
 
     const m = [
-        [ 1,  2,  3,  4, 5],
+        [1, 2, 3, 4, 5],
         [46, 47, 48, 49, 6],
         [45, 84, 85, 50, 7],
         [44, 83, 86, 51, 8],
@@ -206,15 +204,39 @@ function mat20x5() {
     return m;
 }
 
+async function asyncSnail(matt) {
+    const segs = snail(matt);
 
-function main() {
-    const m = mat20x5();
-    const mab = createMatrix(m);
+    const length = matt.rows * matt.cols;
 
-    const res = snail(mab);
-    console.log("Smoke test", res);
+    const shab = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * length);
+    const res = new Int32Array(shab);
+
+    const piscina = new Piscina({
+        filename: resolve(__dirname, 'copySegmentWorker.js'),
+        env: { A: '123' },
+        argv: ['a', 'b', 'c'],
+        execArgv: ['--no-warnings'],
+        workerData: { mat: matt, ar: res }
+    });
+
+    await Promise.all(segs.map(s => piscina.run(s)));
+
+    return res;
 }
-main();
+
+async function main() {
+    // const m = mat20x5();
+    // const mab = createMatrix(m);
+    const rows = 100_000;
+    const cols = 10_000;
+    const mab = createRandMatrix(rows, cols);
+    console.log("🐮", { rows, cols })
+    const res = await asyncSnail(mab);
+    console.log("result", res);
+}
+// main();
+
 
 module.exports.copyMatrix = copyMatrix;
 module.exports.createRandMatrix = createRandMatrix;
@@ -222,5 +244,6 @@ module.exports.createMatrix = createMatrix;
 module.exports.createArray = createArray;
 module.exports.equalAB = equalAB;
 module.exports.snail = snail;
+module.exports.asyncSnail = asyncSnail;
 
 

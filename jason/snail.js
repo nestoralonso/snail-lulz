@@ -1,4 +1,4 @@
-
+//@ts-check
 /**
  * Snail Sort
  *
@@ -17,8 +17,8 @@
  */
  function snail(array) {
     //*************** VARIABLES ***************
-    yDimLenght = array.length;
-    xDimLenght = array[0].length;
+    const yDimLenght = array.length;
+    const xDimLenght = array?.[0]?.length ?? 0;
 
     const result = [];
     let x = 0, y = 0;
@@ -30,7 +30,7 @@
     let hasToIncrease = true;
 
     //****** LOOP having O(n) complexity ********
-    for (resultIndex = 0; resultIndex < xDimLenght * yDimLenght; resultIndex++){
+    for (let resultIndex = 0; resultIndex < xDimLenght * yDimLenght; resultIndex++){
         result[resultIndex] = array[x][y];
 
         //Turn the snail to the right if it's at the edge

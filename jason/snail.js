@@ -1,4 +1,14 @@
 //@ts-check
+
+function matrixGenerator(rows, cols) {
+    const matrix = new Array(rows).fill(new Array(cols).fill(0));
+    const res = matrix.map((row) =>
+      row.map(() => Math.floor(Math.random() * 1000) * 1)
+    );
+
+    return res;
+}
+
 /**
  * Snail Sort
  *
@@ -59,5 +69,12 @@
     //******* RETURN *******
     return result;
 }
+
+function main() {
+    const m = matrixGenerator(100000, 10000);
+    const r = snail(m);
+    console.log("r>>");
+}
+// main();
 
 module.exports = snail;

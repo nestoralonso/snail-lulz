@@ -1,6 +1,7 @@
 //@ts-check
 
 // Following constants are vectors that indicate the direction of movement
+/** @type [number, number]*/
 const RIGHT = [0, 1];
 const DOWN = [1, 0];
 const LEFT = [0, -1];
@@ -21,10 +22,14 @@ const DirectionName = new Map([
     [DOWN, "Down"],
     [LEFT, "Left"],
     [UP, "Up"],
+    [NONE, "None"],
 ]);
 
 /**
- * @param {number[][]} m
+ * Traverses a matrix in a spiral pattern, returns the result as an array starting at 0, 0 clockwise direction
+ *
+ * @param {number[][]} m the source matrix
+ * @returns {number[]}
  */
 function snail(m) {
     if (!m || m.length < 1 || m[0].length < 1) {
@@ -41,53 +46,86 @@ function snail(m) {
     let maxI = m.length - 1;
     let minJ = 0;
     let minI = 0;
+
     let curDir = RIGHT;
 
-    let seg = 0;
     let arI = 0;
     do {
         arI = copySegment(m, res, curDir, arI, i, j, minI, maxI, minJ, maxJ);
-        [i, j, minI, maxI, minJ, maxJ] = nextSegment(curDir, i, j, minI, maxI, minJ, maxJ);
-        curDir = nextDirection(curDir);
-        seg++;
-    } while(arI < res.length); // < 28);
+        [i, j, minI, maxI, minJ, maxJ, curDir] = nextSegment(curDir, i, j, minI, maxI, minJ, maxJ);
+    } while(arI < res.length);
 
     return res;
 }
 
 
+/**
+ * @param {number[]} dir
+ *
+ * @returns {String} legible direction name
+ */
 function directionToString(dir) {
-    return DirectionName.get(dir);
+    return DirectionName.get(dir) ?? "Invalid";
 }
 
+/**
+ * @param {[number, number]} currDir
+ *
+ * @returns {[number, number]}
+ */
 function nextDirection(currDir) {
+    /** @type {[number, number]} */
     const res = NextDirectionMap.get(currDir) ?? NONE;
 
     return res;
 }
 
+/**
+ * @param {[number, number]} dir
+ * @param {number} ci current i position in the matrix
+ * @param {number} cj current j position in the matrix
+ * @param {number} minI minimum allowed i position in the matrix
+ * @param {number} maxI maximum allowed i position in the matrix
+ * @param {number} minJ minimum allowed j position in the matrix
+ * @param {number} maxJ maximum allowed j position in the matrix
+ *
+ * @returns {[ci, number, number, number, number, number, number[]]}
+ */
 function nextSegment(dir, ci, cj, minI, maxI, minJ, maxJ) {
-    if (dir === RIGHT) {
+    const nextDir = nextDirection(dir);
+    if (nextDir === DOWN) {
         cj = maxJ;
         minI++;
         ci++;
-    } else if (dir === DOWN) {
+    } else if (nextDir === LEFT) {
         ci = maxI;
         maxJ--;
         cj--;
-    } else if (dir === LEFT) {
+    } else if (nextDir === UP) {
         cj = minJ;
         maxI--;
         ci--;
-    } else if (dir === UP) {
+    } else if (nextDir === RIGHT) {
         ci = minI;
         minJ++;
         cj++;
     }
 
-    return [ci, cj, minI, maxI, minJ, maxJ];
+    return [ci, cj, minI, maxI, minJ, maxJ, nextDir];
 }
 
+/**
+ * @param {number[][]} mat matrix
+ * @param {number[]} ar destination array
+ * @param {[number, number]} dir delta vector of the current direction
+ * @param {number} arI current index in the destination array
+ * @param {number} ci current i position in the matrix
+ * @param {number} cj current j position in the matrix
+ * @param {number} minI minimum allowed i position in the matrix
+ * @param {number} maxI maximum allowed i position in the matrix
+ * @param {number} minJ minimum allowed j position in the matrix
+ * @param {number} maxJ maximum allowed j position in the matrix
+ */
 function copySegment(mat, ar, dir, arI, ci, cj, minI, maxI, minJ, maxJ) {
     const [di, dj] = dir;
     do {
@@ -125,11 +163,22 @@ function main() {
         [28, 27, 26, 25, 24]
     ];
 
-    const res = snail(m);
-    console.log("Smoke test", JSON.stringify(res));
+    // const res = snail(m);
+
+    const res = snail(matrixGenerator(10000, 10000));
+    console.log("Smoke test", res);
 }
 
 main();
+//If you want to try a larger array
+function matrixGenerator(rows, cols) {
+    const matrix = new Array(rows).fill(new Array(cols).fill(0));
+    const res = matrix.map((row) =>
+      row.map(() => Math.floor(Math.random() * 1000) * 1)
+    );
+
+    return res;
+  }
 
 module.exports = snail;
 

@@ -107,5 +107,20 @@ function snail(array) {
   return reduce(accum, array, directions.R);
 }
 
+function matrixGenerator(rows, cols) {
+  const matrix = new Array(rows).fill(new Array(cols).fill(0));
+  const res = matrix.map((row) =>
+    row.map(() => Math.floor(Math.random() * 1000) * 1)
+  );
+
+  return res;
+}
+
+function main() {
+  const m = matrixGenerator(10000, 10000);
+  const r = snail(m);
+  console.log("r>>", r.length, r.at(-1));
+}
+main();
 
 module.exports = snail;

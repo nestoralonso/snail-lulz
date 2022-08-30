@@ -1,5 +1,5 @@
 //@ts-check
-const snail = require("./jason/snail.js");
+const snail = require("./nestor/snail2.js");
 
 //If you want to try a larger array
 function matrixGenerator(rows, cols) {
@@ -88,13 +88,13 @@ const cases = [
   {
     name: "10000x10000",
     input: () => matrixGen(10000, 10000),
-    enabled: false,
+    enabled: true,
     noCheck: true,
   },
   {
     name: "100000x10000",
     input: () => matrixGen(100000, 10000),
-    enabled: true,
+    enabled: false,
     noCheck: true,
   }
 ];

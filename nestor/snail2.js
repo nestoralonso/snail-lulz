@@ -81,6 +81,11 @@ function nextDirection(currDir) {
 }
 
 /**
+ * returns next segment bounds and direction
+ *
+ * Note: Separating segment creation from copying into result will allow
+ * to parallelize this using workers
+ *
  * @param {[number, number]} dir
  * @param {number} ci current i position in the matrix
  * @param {number} cj current j position in the matrix
